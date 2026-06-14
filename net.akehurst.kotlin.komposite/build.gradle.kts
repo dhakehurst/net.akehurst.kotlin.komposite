@@ -43,7 +43,7 @@ allprojects {
     val version_project: String by project
 
     group = rootProject.name
-    version = "2.0.20-RC"
+    version = rootProject.libs.versions.project.get()
 
     project.layout.buildDirectory = File(rootProject.projectDir, ".gradle-build/${project.name}")
 
@@ -105,7 +105,7 @@ subprojects {
                 }
             }
         }
-        macosArm64()
+       // macosArm64()
     }
 
     dependencies {

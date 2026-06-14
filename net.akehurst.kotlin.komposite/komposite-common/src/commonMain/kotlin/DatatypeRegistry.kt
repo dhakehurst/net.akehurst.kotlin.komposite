@@ -20,11 +20,14 @@ import net.akehurst.kotlin.komposite.api.KompositeException
 import net.akehurst.kotlin.komposite.api.PrimitiveMapper
 import net.akehurst.kotlin.komposite.processor.Komposite
 import net.akehurst.kotlinx.reflect.KotlinxReflect
+import net.akehurst.language.agl.language.typemodel.typeModel
+import net.akehurst.language.api.language.base.PossiblyQualifiedName.Companion.asPossiblyQualifiedName
+import net.akehurst.language.api.language.base.SimpleName
 import net.akehurst.language.typemodel.api.*
 import net.akehurst.language.typemodel.simple.TypeModelSimpleAbstract
 import kotlin.reflect.KClass
 
-class DatatypeRegistry : TypeModelSimpleAbstract("registry") {
+class DatatypeRegistry : TypeModelSimpleAbstract(SimpleName("registry")) {
 
     companion object {
         val KOTLIN_STD_STRING = """
@@ -64,15 +67,15 @@ class DatatypeRegistry : TypeModelSimpleAbstract("registry") {
             namespace("kotlin.collections", emptyList()) {
                 collectionType("Array", listOf("E"))
                 collectionType("Collection", listOf("E"))
-                collectionType("List", listOf("E")).also { it.addSupertype("Collection") }
-                collectionType("Set", listOf("E")).also { it.addSupertype("Collection") }
+                collectionType("List", listOf("E")).also { it.addSupertype("Collection".asPossiblyQualifiedName) }
+                collectionType("Set", listOf("E")).also { it.addSupertype("Collection".asPossiblyQualifiedName) }
                 collectionType("Map", listOf("K", "V"))
             }
         }
-        val TypeDeclaration.isKotlinArray get() = this.qualifiedName=="kotlin.collections.Array"
-        val TypeDeclaration.isKotlinList get() = this.qualifiedName=="kotlin.collections.List"
-        val TypeDeclaration.isKotlinSet get() = this.qualifiedName=="kotlin.collections.Set"
-        val TypeDeclaration.isKotlinMap get() = this.qualifiedName=="kotlin.collections.Map"
+        val TypeDeclaration.isKotlinArray get() = this.qualifiedName.value=="kotlin.collections.Array"
+        val TypeDeclaration.isKotlinList get() = this.qualifiedName.value=="kotlin.collections.List"
+        val TypeDeclaration.isKotlinSet get() = this.qualifiedName.value=="kotlin.collections.Set"
+        val TypeDeclaration.isKotlinMap get() = this.qualifiedName.value=="kotlin.collections.Map"
 
         val JAVA_STD = """
             namespace java.lang {
@@ -123,8 +126,9 @@ class DatatypeRegistry : TypeModelSimpleAbstract("registry") {
     fun findTypeDeclarationByKClass(cls: KClass<*>): TypeDeclaration? {
         //TODO: use qualified name when possible (i.e. when JS reflection supports qualified names)
         //val qname = cls.qualifiedName ?: error("class does not have a qualifiedName!")
+        //return this.findByQualifiedNameOrNull(QualifiedName( qname))
         val qname = cls.simpleName ?: error("class does not have a simple name!")
-        return this.findByQualifiedNameOrNull(qname)
+        return this.findFirstByNameOrNull(SimpleName( qname))
     }
 
     fun findPrimitiveMapperByKClass(cls: KClass<*>): PrimitiveMapper<*, *>? {
@@ -138,55 +142,55 @@ class DatatypeRegistry : TypeModelSimpleAbstract("registry") {
     }
 
     fun isSingleton(value: Any): Boolean {
-        return this.findFirstByNameOrNull(value::class.simpleName!!) is SingletonType
+        return this.findFirstByNameOrNull(SimpleName(value::class.simpleName!!)) is SingletonType
     }
 
     fun isPrimitive(value: Any): Boolean {
-        return this.findFirstByNameOrNull(value::class.simpleName!!) is PrimitiveType
+        return this.findFirstByNameOrNull(SimpleName(value::class.simpleName!!)) is PrimitiveType
     }
 
     fun isEnum(value: Any): Boolean {
-        return this.findFirstByNameOrNull(value::class.simpleName!!) is EnumType
+        return this.findFirstByNameOrNull(SimpleName(value::class.simpleName!!)) is EnumType
     }
 
     fun isCollection(value: Any): Boolean {
         //TODO: use type hierachy so we can e.g. register List rather than ArrayList
         return when (value) {
-            is List<*> -> this.findFirstByNameOrNull("List") is CollectionType
-            is Set<*> -> this.findFirstByNameOrNull("Set") is CollectionType
-            is Map<*, *> -> this.findFirstByNameOrNull("Map") is CollectionType
-            is Collection<*> -> this.findFirstByNameOrNull("Collection") is CollectionType
-            is Array<*> -> this.findFirstByNameOrNull("Array") is CollectionType
-            else -> this.findFirstByNameOrNull(value::class.simpleName!!) is CollectionType
+            is List<*> -> this.findFirstByNameOrNull(SimpleName("List")) is CollectionType
+            is Set<*> -> this.findFirstByNameOrNull(SimpleName("Set")) is CollectionType
+            is Map<*, *> -> this.findFirstByNameOrNull(SimpleName("Map")) is CollectionType
+            is Collection<*> -> this.findFirstByNameOrNull(SimpleName("Collection")) is CollectionType
+            is Array<*> -> this.findFirstByNameOrNull(SimpleName("Array")) is CollectionType
+            else -> this.findFirstByNameOrNull(SimpleName(value::class.simpleName!!)) is CollectionType
         }
     }
 
     fun isDatatype(value: Any): Boolean {
-        return this.findFirstByNameOrNull(value::class.simpleName!!) is DataType
+        return this.findFirstByNameOrNull(SimpleName(value::class.simpleName!!)) is DataType
     }
 
     fun findCollectionTypeFor(value: Any): CollectionType? {
         //TODO: use qualified name when possible
         return when (value) {
-            is List<*> -> this.findFirstByNameOrNull("List") as CollectionType?
-            is Set<*> -> this.findFirstByNameOrNull("Set") as CollectionType?
-            is Map<*, *> -> this.findFirstByNameOrNull("Map") as CollectionType?
-            is Collection<*> -> this.findFirstByNameOrNull("Collection") as CollectionType?
-            is Array<*> -> this.findFirstByNameOrNull("Array") as CollectionType?
-            else -> this.findFirstByNameOrNull(value::class.simpleName!!) as CollectionType?
+            is List<*> -> this.findFirstByNameOrNull(SimpleName("List")) as CollectionType?
+            is Set<*> -> this.findFirstByNameOrNull(SimpleName("Set")) as CollectionType?
+            is Map<*, *> -> this.findFirstByNameOrNull(SimpleName("Map")) as CollectionType?
+            is Collection<*> -> this.findFirstByNameOrNull(SimpleName("Collection")) as CollectionType?
+            is Array<*> -> this.findFirstByNameOrNull(SimpleName("Array")) as CollectionType?
+            else -> this.findFirstByNameOrNull(SimpleName(value::class.simpleName!!)) as CollectionType?
         }
     }
 
     fun checkPublicAndReflectable() : List<String> {
         val issues = mutableListOf<String>()
         for (ns in super.allNamespace) {
-            when(ns.qualifiedName) {
+            when(ns.qualifiedName.value) {
                 "kotlin" -> Unit //don't check kotlin namespace
                 else -> {
-                    for (t in ns.elementType) {
+                    for (t in ns.dataType) {
                         when {
                             //cls.reflect().exists -> Unit //OK
-                            KotlinxReflect.registeredClasses.containsKey(t.qualifiedName) -> Unit // OK gegistered
+                            KotlinxReflect.registeredClasses.containsKey(t.qualifiedName.value) -> Unit // OK gegistered
                             else -> issues.add("Type '${t.qualifiedName}' is not registered with kotlinxReflect")
                         }
                     }

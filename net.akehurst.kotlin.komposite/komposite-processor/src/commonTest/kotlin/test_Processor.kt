@@ -16,8 +16,7 @@
 
 package net.akehurst.kotlin.komposite.processor
 
-import net.akehurst.language.typemodel.api.PropertyCharacteristic
-import net.akehurst.language.typemodel.api.typeModel
+import net.akehurst.language.agl.language.typemodel.typeModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -78,8 +77,8 @@ class test_Processor() {
                 enumType("YYYY", emptyList())
                 dataType("TestDatatype") {
                     propertyOf(setOf(COMPOSITE, IDENTITY), "id", "String")
-                    propertyOf(setOf(COMPOSITE, MEMBER), "prop1", "String")
-                    propertyOf(setOf(REFERENCE, MEMBER), "prop2", "Int")
+                    propertyOf(setOf(COMPOSITE, READ_WRITE), "prop1", "String")
+                    propertyOf(setOf(REFERENCE, READ_WRITE), "prop2", "Int")
                     propertyOf(setOf(), "ignored", "String")
                     propertyOf(setOf(COMPOSITE, IDENTITY), "id2", "Int")
                 }

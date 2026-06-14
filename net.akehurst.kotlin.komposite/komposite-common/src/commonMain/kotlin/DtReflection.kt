@@ -22,16 +22,11 @@ import net.akehurst.kotlinx.reflect.reflect
 import net.akehurst.language.typemodel.api.*
 import kotlin.reflect.KClass
 
-val TypeDeclaration.clazz: KClass<*> get() = KotlinxReflect.classForName(qualifiedName)
-
-//val PropertyDeclaration.isMutable: Boolean get() = this.datatype.clazz.reflect().isPropertyMutable(this.name)
-// reflection isMutable does not work at present!
-// assume member properties are mutable unless they are a collection (in which case they are assumed a mutable collection)
-val PropertyDeclaration.isMutable: Boolean get() = characteristics.contains(PropertyCharacteristic.MEMBER) && typeInstance.declaration !is CollectionType
+val TypeDeclaration.clazz: KClass<*> get() = KotlinxReflect.classForName(qualifiedName.value)
 
 fun SingletonType.objectInstance(): Any {
     try {
-        val obj = KotlinxReflect.objectInstance<Any>(this.qualifiedName)
+        val obj = KotlinxReflect.objectInstance<Any>(this.qualifiedName.value)
         return obj as Any
     } catch (t: Throwable) {
         throw KompositeException("Unable to fetch objectInstance ${this.name} due to ${t.message ?: "Unknown"}")
@@ -50,7 +45,7 @@ fun DataType.construct(vararg constructorArgs: Any?): Any {
 
 fun PropertyDeclaration.get(obj: Any): Any? {
     val reflect = obj.reflect()
-    return reflect.getProperty(this.name)
+    return reflect.getProperty(this.name.value)
 }
 /*
 fun DatatypeProperty.set(obj: Any, value: Any?) {
@@ -85,10 +80,10 @@ fun DatatypeProperty.set(obj: Any, value: Any?) {
 fun PropertyDeclaration.set(obj: Any, value: Any?) {
     try{
         val reflect = obj.reflect()
-        if (this.isMutable) {
-            reflect.setProperty(this.name, value)
+        if (this.isReadWrite) {
+            reflect.setProperty(this.name.value, value)
         } else {
-            val existingValue = reflect.getProperty(this.name)
+            val existingValue = reflect.getProperty(this.name.value)
             when {
                 (existingValue is MutableCollection<*> && value is Collection<*>) -> {
                     existingValue.clear()

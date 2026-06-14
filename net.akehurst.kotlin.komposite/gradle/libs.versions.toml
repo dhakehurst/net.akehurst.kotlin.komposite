@@ -1,12 +1,14 @@
 [versions]
-kotlin = "2.0.20-RC"
+project = "2.0.20"
+
+kotlin = "2.0.20"
 dokka = "1.9.10"
-exportPublic = "2.0.20-RC"
-buildconfig = "5.3.5"
+exportPublic = "2.0.20"
+buildconfig = "5.4.0"
 credentials = "3.0"
 
-nal-agl-processor = "4.2.0.20-RC"
-nak-kotlinx = "2.0.20-RC"
+nal-agl-processor = "4.2.0.20"
+nak-kotlinx = "2.0.20"
 
 
 [libraries]

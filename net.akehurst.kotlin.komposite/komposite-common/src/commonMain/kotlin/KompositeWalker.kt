@@ -18,6 +18,7 @@ package net.akehurst.kotlin.komposite.common
 
 import net.akehurst.kotlin.komposite.api.KompositeException
 import net.akehurst.kotlin.komposite.api.PrimitiveMapper
+import net.akehurst.language.api.language.base.SimpleName
 import net.akehurst.language.typemodel.api.*
 
 inline fun <P : Any?, A : Any?> kompositeWalker(registry: DatatypeRegistry, init: KompositeWalker.Builder<P, A>.() -> Unit): KompositeWalker<P, A> {
@@ -208,7 +209,7 @@ class KompositeWalker<P : Any?, A : Any?>(
 
     protected fun walkSingleton(owningProperty: PropertyDeclaration?, path: List<String>, info: WalkInfo<P, A>, obj: Any): WalkInfo<P, A> {
         val cls = obj::class
-        val dt = registry.findFirstByNameOrNull(cls.simpleName!!) as SingletonType
+        val dt = registry.findFirstByNameOrNull(SimpleName( cls.simpleName!!)) as SingletonType
         return this.singleton(path, info, obj, dt)
     }
 
@@ -229,7 +230,7 @@ class KompositeWalker<P : Any?, A : Any?>(
     protected fun walkObject(owningProperty: PropertyDeclaration?, path: List<String>, info: WalkInfo<P, A>, obj: Any): WalkInfo<P, A> {
         //TODO: use qualified name when we can
         val cls = obj::class
-        val dt = registry.findFirstByNameOrNull(cls.simpleName!!) as DataType? ?: error("Cannot find datatype for ${cls}, is it in the datatype configuration")
+        val dt = registry.findFirstByNameOrNull(SimpleName(cls.simpleName!!)) as DataType? ?: error("Cannot find datatype for ${cls}, is it in the datatype configuration")
         val infoob = this.objectBegin(path, info, obj, dt)
         var acc = infoob.acc
 
@@ -254,7 +255,7 @@ class KompositeWalker<P : Any?, A : Any?>(
             acc
         } else {
             val propValue = prop.get(obj)
-            val ppath = path + prop.name
+            val ppath = path + prop.name.value
             val infopb = this.propertyBegin(ppath, WalkInfo(infoob.up, acc), prop)
             val infowp = this.walkPropertyValue(prop, ppath, WalkInfo(infoob.up, infopb.acc), propValue)
             val infope = this.propertyEnd(ppath, WalkInfo(infoob.up, infowp.acc), prop)
